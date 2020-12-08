@@ -3,7 +3,11 @@ import ply.yacc as yacc
 
 # tokens
 tokens = ("SYMBOL", "OR", "DOT", "PLUS", "OPT", "REPIT", "LRB", "RRB", "ID")
-
+# + позитивное замыкание - одно или более вхождений
+# opt ? - ноль или одно вхождение
+# repiy {х, y},где x – нижняя граница, y – верхняя граница), границы могут отсутствовать - повтор выражения в диапазоне
+# LRB RBR - левая и правая границы left round bracket ( левая круглая скобка)
+# * ноль или более вхождений
 
 def t_SYMBOL(t):
     r"(&[?+.|&{}<>()])|([^<>?+.|&)({}])"
@@ -78,7 +82,7 @@ def t_ID(t):
 def t_error(t):
     global ErrorsList
     ErrorsList.append("Illegal character '%s'" % t.value[0])
-    t.lexer.skip(1)
+    t.lexer.skip(1) # пропустить n=1 символов в строке
 
 
 lexer = lex.lex()
@@ -86,7 +90,7 @@ lexer = lex.lex()
 precedence = (("left", "OR"),)
 
 
-def p_regular(p):
+def p_regular(p): # задается точка входа, это особая грамматика с которой мы можем начать. Создается корневой узел
     """regular : reg"""
     p[0] = RootNode(p[1])  
 
@@ -163,7 +167,7 @@ def p_ncgroup(p):
         namedCaptureGroups[p[2]] = p[3]
     else:
         global ErrorsList
-        ErrorsList.append("Redefinition of named capture group:" + p[2])
+        ErrorsList.append("Redefinition of named capture group:" + p[2]) # переопределение именнованой группы захвата  
 
 
 def p_expncgroup(p):
@@ -173,7 +177,7 @@ def p_expncgroup(p):
         p[0] = NCGNode(namedCaptureGroups[p[1]].copy(), p[1])
     else:
         global ErrorsList
-        ErrorsList.append("Undefined named capture group: " + p[1])
+        ErrorsList.append("Undefined named capture group: " + p[1]) # неопределенная именованная группа захвата
 
 
 def p_alfsym(p):
@@ -183,10 +187,10 @@ def p_alfsym(p):
 
 def p_error(p):
     global ErrorsList
-    ErrorsList.append("unexpexted token: " + str(p))
+    ErrorsList.append("unexpexted token: ") #неожидаемый токен
 
 
-parser = yacc.yacc()
+parser = yacc.yacc() #есть метод parse(regex), который возвращает дерево
 
 listNodes = []
 followposList = []
@@ -211,7 +215,7 @@ class RootNode:
     def followpos(self):
         global followposList
         for pos in self.child.lastpos():
-            followposList[pos].add(-1)
+            followposList[pos].add(-1) # -1 - это код = конец
         self.child.followpos()
 
 
@@ -402,7 +406,7 @@ class SymbolNode:
         self.char = char  
         global listNodes
         global followposList
-        self.number = len(listNodes)
+        self.number = len(listNodes) # длина массива = новый номер
         listNodes.append(self)
         followposList.append(set())
 
@@ -459,7 +463,7 @@ def buildDKA(root):
         R = unmarkedStateList[0]
         if not nextState.get(R):
             nextState[R] = {}
-        unmarkedStateList = unmarkedStateList[1:]
+        unmarkedStateList = unmarkedStateList[1:] # удаляем = пометили
         StateList.append(R)
         symbols = set()
         for number in R:
@@ -524,7 +528,7 @@ def findnext(string, stateList, nextState, finishStateList):
         ):
             break 
     else:
-        currString = string  # all string checked but nothing found
+        currString = string  # все строки проверены, но ничего не найдено
         result = ""
     return result, currString
 
@@ -542,7 +546,7 @@ def initGlobals():
 def findall(regex, string):
     result = []
     initGlobals()
-    root = parser.parse(regex)  # build tree
+    root = parser.parse(regex)  # строим дерево
     global ErrorsList
     if not ErrorsList:
         stateList, nextState, finishStateList = buildDKA(root)
@@ -562,7 +566,7 @@ def findall(regex, string):
 
 def compile(regex):
     initGlobals()
-    root = parser.parse(regex)  # build tree
+    root = parser.parse(regex)  # строим дерево
     global ErrorsList
     global namedCaptureGroups
     if not ErrorsList:
