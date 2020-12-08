@@ -88,7 +88,7 @@ precedence = (("left", "OR"),)
 
 def p_regular(p):
     """regular : reg"""
-    p[0] = RootNode(p[1])  # it remembers about (r)# formality
+    p[0] = RootNode(p[1])  
 
 
 def p_reg(p):
@@ -114,7 +114,7 @@ def p_orreg(p):
 
 
 def p_concat(p):
-    """concat : reg reg"""  # ??? reg DOT reg ???
+    """concat : reg reg"""  
     p[0] = ConcatNode(p[1], p[2])
 
 
@@ -130,7 +130,7 @@ def p_optional(p):
 
 def p_anysym(p):
     """anysym : DOT"""
-    p[0] = SymbolNode()  # char = -1 - special code for symbol
+    p[0] = SymbolNode()  
 
 
 ErrorsList = []
@@ -192,7 +192,7 @@ listNodes = []
 followposList = []
 
 
-class RootNode:  # it remembers about (r)# formality
+class RootNode:  
     def __init__(self, child):
         self.child = child
 
