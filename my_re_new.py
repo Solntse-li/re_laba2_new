@@ -69,12 +69,6 @@ def t_RRB(t):
     return t
 
 
-# def t_AMP(t):
-#     r"&"
-#     t.value = str(t.value)
-#     return t
-
-
 def t_ID(t):
     r"\<[A-Za-z][A-Za-z0-9_]*\>"
     t.value = str(t.value)[1:-1]
@@ -88,9 +82,7 @@ def t_error(t):
 
 
 lexer = lex.lex()
-# end of tokens
 
-# define regular expressions
 precedence = (("left", "OR"),)
 
 
@@ -195,9 +187,6 @@ def p_error(p):
 
 
 parser = yacc.yacc()
-# end of regular expressions
-
-# tree nodes
 
 listNodes = []
 followposList = []
@@ -346,19 +335,8 @@ class OptNode:
         self.child.followpos()
 
 
-# class AnySymNode:
-#         def __init__(self):
-#                 self.char = -1 # special code for any symbol node
-
-#         def nullable(self):
-#                 return False
-
-
 class RepitNode:
     def __init__(self, child, lowerBound=0, upperBound=-1):
-        #        self.child = child
-        #        self.lowerBound = lowerBound
-        #        self.upperBound = upperBound  # -1 means infinity
         if upperBound < 0 and not lowerBound:
             self.child = ClosureNode(child)
         elif upperBound < 0:
@@ -421,7 +399,7 @@ class NCGNode:
 
 class SymbolNode:
     def __init__(self, char=-1):
-        self.char = char  # -1 - special code for any symbol node
+        self.char = char  
         global listNodes
         global followposList
         self.number = len(listNodes)
@@ -437,15 +415,15 @@ class SymbolNode:
     def firstpos(self):
         return {
             self.number,
-        }  # set
+        }  
 
     def lastpos(self):
         return {
             self.number,
-        }  # set
+        }  
 
     def followpos(self):
-        pass  # nothing to do here, that's the job for upper levels
+        pass  
 
 
 class EmptyNode:
@@ -466,9 +444,6 @@ class EmptyNode:
 
     def followpos(self):
         pass
-
-
-# end of tree nodes
 
 
 def buildDKA(root):
@@ -516,15 +491,15 @@ def predict(currString, currState, stateList, nextState, finishStateList):
         if nextState[state].get(symbol):
             state = nextState[state][symbol]
             result = result + symbol
-        elif nextState[state].get(-1):  # any symbol
+        elif nextState[state].get(-1):  
             state = nextState[state][-1]
             result = result + symbol
         else:
             result = ""
-            return False  # nothing found
+            return False  
         if currState in finishStateList:
-            return True  # good prediction
-    return False  # bad prediction
+            return True 
+    return False  
 
 
 def findnext(string, stateList, nextState, finishStateList):
@@ -537,17 +512,17 @@ def findnext(string, stateList, nextState, finishStateList):
         if nextState[currState].get(symbol):
             currState = nextState[currState][symbol]
             result = result + symbol
-        elif nextState[currState].get(-1):  # any symbol
+        elif nextState[currState].get(-1):  
             currState = nextState[currState][-1]
             result = result + symbol
         else:
             result = ""
             currString = string
-            break  # nothing found
+            break  
         if currState in finishStateList and not predict(
             currString, currState, stateList, nextState, finishStateList
         ):
-            break  # result ready
+            break 
     else:
         currString = string  # all string checked but nothing found
         result = ""
